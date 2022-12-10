@@ -1,0 +1,44 @@
+To design a datastore for the given scenario, we need to take into account the following aspects:
+
+The number of APIs and the number of users that will be making requests to the service (100 APIs and 1000 users, with roughly 1 million requests per day)
+The type of data that must be stored (monitoring data, including API name, user ID, request time, response time, and error status)
+The queries that will be performed on the datastore (finding the API with the maximum average response time across users, maximum average response time for each user, and error percentage of each API in 1-hour buckets for 24 hours)
+
+Based on these factors, we can design the datastore using a relational database with the following schema:
+
+ServiceMonitoringData:
+  - api_name (string)
+  - user_id (integer)
+  - request_time (datetime)
+  - response_time (integer)
+  - error_status (boolean)
+
+
+
+This schema allows us to store the monitoring data of the service in a structured manner, and use SQL queries to perform the required operations, such as finding the API with maximum average response time across users, maximum average response time for each user, and error percentage of each API in buckets of 1 hour for 24 hours.The schema allows us to store the service's monitoring data in a structured way, enabling us to use SQL queries to perform the necessary operations, such as finding the API with the maximum average response time across users, the maximum average response time for each user, and the error percentage of each API in 1-hour buckets for 24 hours.
+
+
+For example, the following SQL query can be used to get the API with maximum average response time across users:
+
+SELECT api_name, AVG(response_time) AS avg_response_time
+FROM ServiceMonitoringData
+GROUP BY api_name
+ORDER BY avg_response_time DESC
+LIMIT 1
+
+
+This query calculates the average response time for each API, and then returns the API with the maximum average response time.
+Similarly, the following SQL query can be used to get the API with maximum average response time for each user:
+
+SELECT user_id, api_name, AVG(response_time) AS avg_response_time
+FROM ServiceMonitoringData
+GROUP BY user_id, api_name
+ORDER BY avg_response_time DESC
+
+
+This query calculates the average response time for each API and user, and then returns the API with the maximum average response time for each user.
+Finally, the following SQL query can be used to get the error percentage of each API in buckets of 1 hour for 24 hours:
+
+SELECT api_name, request_time, SUM(error_status) / COUNT(*) AS error_percentage
+FROM ServiceMonitoringData
+GROUP BY api_name, request_time
